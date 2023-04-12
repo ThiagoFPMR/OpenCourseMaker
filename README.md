@@ -1,1 +1,1 @@
-# OpenCourseMaker
+# Open Course Maker
