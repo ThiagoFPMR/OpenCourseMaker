@@ -1,4 +1,4 @@
-{{define "NovoCadastro"}}
+{{define "register.html"}}
 
 {{template "_head"}}
 
@@ -16,26 +16,13 @@
             <div class="row">
                 <div class="col-12">
                     <div class="contact-form-area">
-                        <form action="cadastrar" method="post">
+                        <form action="register" method="post">
                             <div class="form-group">
-                                <label for="username">Nome de usuário:</label>
-                                <input type="text" name="username" class="form-control">
-
                                 <label for="nome">Nome:</label>
                                 <input type="text" name="nome" class="form-control">
 
-
-                                <label for="sobrenome">Sobrenome:</label>
-                                <input type="text" name="sobrenome" class="form-control">
-
-                                <label for="datanasc">Nome:</label>
-                                <input type="date" name="datanasc" class="form-control">
-
-                                <label for="tipo">Tipo de cadastro:</label>
-                                <select name="tipo" class="form-control">
-                                    <option value="1">Professor</option>
-                                    <option value="2">Aluno</option>
-                                </select>
+                                <label for="email">Email:</label>
+                                <input type="email" name="email" class="form-control">
 
                                 <label for="password">Senha:</label>
                                 <input type="password" name="password" class="form-control">

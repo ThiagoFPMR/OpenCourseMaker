@@ -1,13 +1,20 @@
 package routes
 
 import (
-	"OpenCourseMaker/controllers"
-	"net/http"
+	"github.com/ThiagoFPMR/OpenCourseMaker/controllers"
+	"github.com/gin-gonic/gin"
+	"html/template"
+	"strings"
 )
 
-func CarregaRotas() {
-	http.HandleFunc("/", controllers.Index)
-	http.HandleFunc("/novocadastro", controllers.NovoCadastro)
-	http.HandleFunc("/cadastrar", controllers.Cadastrar)
-	http.HandleFunc("/login", controllers.Autenticar)
+func HandleRequests() {
+	r := gin.Default()
+	r.SetFuncMap(template.FuncMap{
+		"upper": strings.ToUpper,
+	})
+	r.LoadHTMLGlob("templates/*.html")
+	r.GET("/", controllers.Index)
+	r.GET("/register", controllers.RegisterGETHandler)
+	r.POST("/register", controllers.RegisterPOSTHandler)
+	r.Run(":8000")
 }
