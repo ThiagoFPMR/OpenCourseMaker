@@ -14,9 +14,9 @@ var (
 
 func ConectBD() {
 	conect := "user=postgres dbname=open_course_maker password=postgres host=localhost sslmode=disable"
-	DB, err := gorm.Open(postgres.Open(conect))
+	DB, err := gorm.Open(postgres.Open(conect), &gorm.Config{})
 	if err != nil {
-		log.Panic("Erro ao conectar com o banco de dados")
+		log.Fatal("Erro ao conectar com o banco de dados")
 	}
 	DB.AutoMigrate(&models.User{})
 }

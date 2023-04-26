@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
-	"github.com/ThiagoFPMR/OpenCourseMaker/models"
+	"github.com/ThiagoFPMR/OpenCourseMaker/user"
+	"github.com/ThiagoFPMR/OpenCourseMaker/user/signup"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
@@ -17,26 +19,35 @@ func RegisterGETHandler(c *gin.Context) {
 }
 
 func RegisterPOSTHandler(c *gin.Context) {
-	var user models.User
-	user.Nome = c.PostForm("nome")
-	user.Email = c.PostForm("email")
-	user.Password = c.PostForm("password")
+	nome := c.PostForm("nome")
+	email := c.PostForm("email")
+	password := c.PostForm("password")
 	password2 := c.PostForm("password2")
-
-	if user.Password != password2 {
+	if password != password2 {
 		c.HTML(http.StatusOK, "register.html", gin.H{
 			"error": "As senhas não conferem",
 		})
 		return
 	}
 
-	res := db.BD.Create(&user)
-	if res.Error != nil {
-		c.HTML(http.StatusOK, "register.html", gin.H{
-			"error": res.Error.Error(),
-		})
-		return
+	res, err := signup.Signup(db.BD, &signup.Request{
+		Nome:     nome,
+		Email:    email,
+		Password: password,
+	})
+
+	if err != nil {
+		switch err.(type) {
+		case *user.EmailAlreadyExistsError:
+			c.HTML(http.StatusBadRequest, err.Error(), nil)
+			return
+		default:
+			c.HTML(http.StatusInternalServerError, err.Error(), nil)
+			return
+		}
 	}
+
+	fmt.Println("Created: ", res.Id)
 
 	location := url.URL{Path: "/"}
 	c.Redirect(http.StatusMovedPermanently, location.RequestURI())
