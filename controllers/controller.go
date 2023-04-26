@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user"
+	"github.com/ThiagoFPMR/OpenCourseMaker/user/login"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/signup"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -54,5 +55,27 @@ func RegisterPOSTHandler(c *gin.Context) {
 
 }
 
-//func Autenticar(w http.ResponseWriter, r *http.Request) {
-//}
+func LoginGETHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", nil)
+}
+
+func LoginPOSTHandler(c *gin.Context) {
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	res, err := login.Login(db.BD, &login.Request{
+		Email:    email,
+		Password: password,
+	})
+	if err != nil {
+		switch err.(type) {
+		case *login.PasswordIncorrectError:
+			c.HTML(http.StatusBadRequest, err.Error(), nil)
+			return
+		default:
+			c.HTML(http.StatusInternalServerError, err.Error(), nil)
+			return
+		}
+	}
+	fmt.Println("Logged in: ", res.User.Email)
+}

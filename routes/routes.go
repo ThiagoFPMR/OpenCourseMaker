@@ -16,5 +16,7 @@ func HandleRequests() {
 	r.GET("/", controllers.Index)
 	r.GET("/register", controllers.RegisterGETHandler)
 	r.POST("/register", controllers.RegisterPOSTHandler)
+	r.GET("/login", controllers.LoginGETHandler)
+	r.POST("/login", controllers.LoginPOSTHandler)
 	r.Run(":8000")
 }
