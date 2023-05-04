@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/login"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/signup"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"net/url"
 )
 
 func Index(c *gin.Context) {
@@ -78,4 +79,8 @@ func LoginPOSTHandler(c *gin.Context) {
 		}
 	}
 	fmt.Println("Logged in: ", res.User.Email)
+}
+
+func PlayerGET(c *gin.Context) {
+	c.HTML(http.StatusOK, "player.html", nil)
 }

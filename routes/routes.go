@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"github.com/ThiagoFPMR/OpenCourseMaker/controllers"
-	"github.com/gin-gonic/gin"
 	"html/template"
 	"strings"
+
+	"github.com/ThiagoFPMR/OpenCourseMaker/controllers"
+	"github.com/gin-gonic/gin"
 )
 
 func HandleRequests() {
@@ -18,5 +19,6 @@ func HandleRequests() {
 	r.POST("/register", controllers.RegisterPOSTHandler)
 	r.GET("/login", controllers.LoginGETHandler)
 	r.POST("/login", controllers.LoginPOSTHandler)
+	r.GET("/player", controllers.PlayerGET)
 	r.Run(":8000")
 }
