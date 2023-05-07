@@ -1,11 +1,11 @@
 package main
 
 import (
-	"OpenCourseMaker/routes"
-	"net/http"
+	"github.com/ThiagoFPMR/OpenCourseMaker/db"
+	"github.com/ThiagoFPMR/OpenCourseMaker/routes"
 )
 
 func main() {
-	routes.CarregaRotas()
-	http.ListenAndServe(":8000", nil)
+	db.ConectBD()
+	routes.HandleRequests()
 }
