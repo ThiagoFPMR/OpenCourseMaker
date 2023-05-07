@@ -19,3 +19,12 @@ func FindByEmail(db *gorm.DB, email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+func FindById(db *gorm.DB, id uint) (*models.User, error) {
+	var user models.User
+	res := db.Find(&user, &models.User{ID: id})
+	if res.Error != nil {
+		return nil, &EmailNotFoundError{}
+	}
+	return &user, nil
+}

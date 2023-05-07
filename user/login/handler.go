@@ -13,7 +13,8 @@ type Request struct {
 }
 
 type Response struct {
-	User *models.User
+	User  *models.User
+	Token string
 }
 
 type PasswordIncorrectError struct{}
