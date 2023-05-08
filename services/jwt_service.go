@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"strconv"
 	"time"
@@ -20,11 +19,13 @@ func NewJWTService() *jwtService {
 }
 
 type Claim struct {
-	Sum uint `json:"sum"`
+	ID    uint   `json:"id"`
+	Nome  string `json:"nome"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func (s *jwtService) GenerateToken(id uint) (string, error) {
+func (s *jwtService) GenerateToken(id uint, nome string, email string) (string, error) {
 	TOKEN_HOURS_LIFESPAN := "1"
 	token_lifespan, err := strconv.Atoi(TOKEN_HOURS_LIFESPAN)
 	if err != nil {
@@ -33,6 +34,8 @@ func (s *jwtService) GenerateToken(id uint) (string, error) {
 
 	claim := &Claim{
 		id,
+		nome,
+		email,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * time.Duration(token_lifespan)).Unix(),
 			Issuer:    s.issuer,
@@ -48,15 +51,4 @@ func (s *jwtService) GenerateToken(id uint) (string, error) {
 	}
 
 	return t, nil
-}
-
-func (s *jwtService) ValidateToken(token string) bool {
-	_, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
-			return nil, fmt.Errorf("Invalid token: %v", token)
-		}
-		return []byte(s.secretKey), nil
-	})
-
-	return err == nil
 }

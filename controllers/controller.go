@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
+	"strconv"
 
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user"
@@ -16,7 +17,10 @@ import (
 const userkey = "user"
 
 func Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", nil)
+	logged_in := GetLoggedInStatus(c)
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"logged_in": logged_in,
+	})
 }
 
 func Auth(c *gin.Context) {
@@ -26,12 +30,16 @@ func Auth(c *gin.Context) {
 }
 
 func RegisterGETHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.html", nil)
+	logged_in := GetLoggedInStatus(c)
+	c.HTML(http.StatusOK, "register.html", gin.H{
+		"logged_in": logged_in,
+	})
 }
 
 func RegisterPOSTHandler(c *gin.Context) {
 	nome := c.PostForm("nome")
 	email := c.PostForm("email")
+	tipo := c.PostForm("tipo")
 	password := c.PostForm("password")
 	password2 := c.PostForm("password2")
 	if password != password2 {
@@ -41,9 +49,18 @@ func RegisterPOSTHandler(c *gin.Context) {
 		return
 	}
 
+	tipoFormatado, err := strconv.Atoi(tipo)
+	if err != nil {
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"error": "Tipo de usuário inválido",
+		})
+		return
+	}
+
 	res, err := signup.Signup(db.BD, &signup.Request{
 		Nome:     nome,
 		Email:    email,
+		Tipo:     tipoFormatado,
 		Password: password,
 	})
 
@@ -87,29 +104,21 @@ func LoginPOSTHandler(c *gin.Context) {
 			return
 		}
 	} else {
-		//access_token, err := user.GenerateToken(res.User.ID)
-		token, err := services.NewJWTService().GenerateToken(res.User.ID)
+		token, err := services.NewJWTService().GenerateToken(res.User.ID, res.User.Nome, res.User.Email)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 		}
-		//c.JSON(200, gin.H{"token": token})
-		//if err != nil {
-		//	c.JSON(http.StatusInternalServerError, err.Error())
-		//	return
-		//}
 
 		c.SetCookie("access_token", token, 3600, "/", "localhost", false, true)
 		c.SetCookie("logged_in", "true", 3600, "/", "localhost", false, true)
-		//c.JSON(http.StatusOK, gin.H{"message": "success", "access_token": access_token})
-		c.JSON(http.StatusOK, gin.H{"message": "success", "access_token": token})
-		c.Redirect(http.StatusOK, "/teste")
+		c.Redirect(http.StatusSeeOther, "/dashboard")
 	}
 }
 
 func LogoutGETHandler(c *gin.Context) {
 	c.SetCookie("access_token", "", -1, "/", "localhost", false, true)
-	c.SetCookie("logged_in", "", -1, "/", "localhost", false, true)
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	c.SetCookie("logged_in", "false", -1, "/", "localhost", false, true)
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
 func CurrentUser(c *gin.Context) {
@@ -130,6 +139,43 @@ func PlayerGET(c *gin.Context) {
 	c.HTML(http.StatusOK, "player.html", nil)
 }
 
-func TesteGETHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "teste.html", nil)
+func DashboardGETHandler(c *gin.Context) {
+	logged_in := GetLoggedInStatus(c)
+
+	// Obtém o nome de usuário e o e-mail do usuário atual da variável de contexto
+	nome, exists := c.Get("nome")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	email, exists := c.Get("email")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, _ := user.FindByEmail(db.BD, email.(string))
+	tipo := user.Tipo
+	var tipoConta string
+	if tipo == 1 {
+		tipoConta = "Professor"
+	} else {
+		tipoConta = "Aluno"
+	}
+
+	// Renderiza a página de dashboard com as informações do usuário atual
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{
+		"nome":      nome,
+		"email":     email,
+		"tipo":      tipoConta,
+		"logged_in": logged_in,
+	})
+}
+
+func GetLoggedInStatus(c *gin.Context) bool {
+	logged_in, err := c.Cookie("logged_in")
+	if err != nil || logged_in != "true" {
+		return false
+	}
+	return true
 }

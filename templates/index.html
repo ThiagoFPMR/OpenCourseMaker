@@ -2,7 +2,35 @@
 
 {{template "_head"}}
 
-{{template "_menu"}}
+<section class="container mt-2 col-8">
+    <!-- ##### Header Area  ##### -->
+    <header class="header-area">
+        <div class="classy-nav-container breakpoint-off">
+            <div class="container">
+                <!-- #### Menu ##### -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border border-primary mb-5">
+                    <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+                        <a class="navbar-brand" href="/">Open Couse Maker</a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+                        <ul class="navbar-nav ml-auto">
+                            {{if .logged_in}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/dashboard" role="button">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/logout" role="button">Sair</a></li>
+                            {{else}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/login" role="button">Entrar</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/register" role="button">Cadastre-se</a></li>
+                            {{end}}
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+</section>
 
 <body>
 

@@ -3,7 +3,31 @@
 {{template "_head"}}
 
 <section class="container mt-2 col-8">
-    {{template "_menu"}}
+    <header class="header-area">
+        <div class="classy-nav-container breakpoint-off">
+            <div class="container">
+                <!-- #### Menu ##### -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border border-primary mb-5">
+                    <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+                        <a class="navbar-brand" href="/">Open Couse Maker</a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+                        <ul class="navbar-nav ml-auto">
+                            {{if .logged_in}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-danger" href="/logout" role="button">Sair</a></li>
+                            {{else}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/login" role="button">Entrar</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/register" role="button">Cadastre-se</a></li>
+                            {{end}}
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
     <div class="contact-area section-padding-0-80">
         <div class="container">
             <div class="row">
@@ -19,21 +43,31 @@
                         <form action="register" method="post">
                             <div class="form-group">
                                 <label for="nome">Nome:</label>
-                                <input type="text" name="nome" class="form-control">
+                                <input type="text" name="nome" class="form-control" required>
 
                                 <label for="email">Email:</label>
-                                <input type="email" name="email" class="form-control">
+                                <input type="email" name="email" class="form-control" required>
+
+                                <label for="tipo">Tipo de cadastro:</label>
+                                <select name="tipo" class="form-control">
+                                    <option value="1">Professor</option>
+                                    <option value="2">Aluno</option>
+                                </select>
 
                                 <label for="password">Senha:</label>
-                                <input type="password" name="password" class="form-control">
+                                <input type="password" name="password" class="form-control" required>
 
                                 <label for="password2">Confirme sua senha:</label>
-                                <input type="password" name="password2" class="form-control">
+                                <input type="password" name="password2" class="form-control" required>
                             </div>
 
                             <div class="mt-2 col-12 text-center">
+                                {{if .logged_in}}
+                                <a class="btn btn-info" href="/">Voltar</a>
+                                {{else}}
                                 <button class="btn btn-outline-primary" type="submit">Criar sua conta</button>
                                 <a class="btn btn-info" href="/">Voltar</a>
+                                {{end}}
                             </div>
                         </form>
                     </div>
