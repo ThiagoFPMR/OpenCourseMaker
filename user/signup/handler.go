@@ -10,6 +10,7 @@ import (
 type Request struct {
 	Nome     string
 	Email    string
+	Tipo     int
 	Password string
 }
 
@@ -25,6 +26,7 @@ func Signup(db *gorm.DB, req *Request) (*Response, error) {
 	newUser := &models.User{
 		Nome:     req.Nome,
 		Email:    req.Email,
+		Tipo:     req.Tipo,
 		Pswdhash: string(passwordHash),
 	}
 	id, err := user.Create(db, newUser)

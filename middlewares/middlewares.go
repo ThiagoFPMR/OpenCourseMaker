@@ -1,47 +1,43 @@
 package middlewares
 
 import (
-	"github.com/ThiagoFPMR/OpenCourseMaker/services"
+	"fmt"
+	"github.com/ThiagoFPMR/OpenCourseMaker/user"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 )
 
 func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var access_token string
-		cookie, err := c.Cookie("access_token")
-
-		authorizationHeader := c.Request.Header.Get("Authorization")
-		fields := strings.Fields(authorizationHeader)
-
-		if len(fields) != 0 && fields[0] == "Bearer" {
-			access_token = fields[1]
-		} else if err == nil {
-			access_token = cookie
+		// Verifica se o cookie de autenticação existe na solicitação
+		tokenString := user.ExtractToken(c)
+		if tokenString == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
 		}
 
-		if access_token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": "You are not logged in"})
+		// Verifica se o token JWT é válido
+		if err := user.TokenValid(tokenString); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
 		}
 
-		c.Set("currentUser", "")
+		// Se o token JWT é válido, define o usuário atual na variável de contexto
+		// Aqui estou usando o nome de usuário armazenado no token JWT, mas você pode armazenar outros dados no token
+		token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte("secret"), nil
+		})
+		claims := token.Claims.(jwt.MapClaims)
+		nome := claims["nome"].(string)
+		email := claims["email"].(string)
+		c.Set("nome", nome)
+		c.Set("email", email)
+
+		// Chama a próxima função de tratamento de solicitações na cadeia de middleware
 		c.Next()
-	}
-}
-
-func Auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		const Bearer_schema = "Bearer "
-		header := c.GetHeader("Authorization")
-		if header == "" {
-			c.AbortWithStatus(401)
-		}
-
-		token := header[len(Bearer_schema):]
-
-		if !services.NewJWTService().ValidateToken(token) {
-			c.AbortWithStatus(401)
-		}
 	}
 }
