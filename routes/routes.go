@@ -31,6 +31,7 @@ func HandleRequests() {
 	protected.GET("/user", controllers.CurrentUser)
 	protected.GET("/logout", controllers.LogoutGETHandler)
 	protected.GET("/dashboard", controllers.DashboardGETHandler)
+	protected.POST("/create_course", controllers.CreateCoursePOSTHandler)
 	protected.GET("/player", controllers.PlayerGET)
 	r.Run(":8000")
 }

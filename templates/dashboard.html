@@ -18,7 +18,7 @@
                     <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
                         <ul class="navbar-nav ml-auto">
                             {{if .logged_in}}
-                            <li class="nav-item"><a class="nav-link btn btn-outline-danger" href="/logout" role="button">Sair</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/logout" role="button">Sair</a></li>
                             {{else}}
                             <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/login" role="button">Entrar</a></li>
                             <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/register" role="button">Cadastre-se</a></li>
@@ -29,23 +29,120 @@
             </div>
         </div>
     </header>
-    <div class="contact-area section-padding-0-80">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="section-heading">
-                        <h2>Dashboard</h2>
+</section>
+
+<!-- Infiormações de usuário -->
+<section class="container text-center mt-2 col-8">
+    <div class="my-5"><h1>Bem vindo ao Open Couse Maker</h1></div>
+    {{if .logged_in}}
+    <div class="card text-white bg-primary mb-3" style="max-width: 72rem;">
+        <div class="card-body">
+            <h5 class="card-title">Informações de Usuário</h5>
+            <table class="table table-sm text-white">
+                <tbody>
+                <tr>
+                    <th scope="row">Nome Completo</th>
+                    <td>{{ .nome }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Email</th>
+                    <td>
+                        {{ .email }}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Vínculo</th>
+                    <td>
+                        {{ .tipo }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {{end}}
+</section>
+
+{{if eq .tipo "Professor"}}
+<!-- Informações dos cursos -->
+<section class="container text-center mt-2 col-8">
+    <div class="my-2"><h2>Cursos misistrados</h2></div>
+    <div class="my-3">
+        <div class="mb-3">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalCadastrarCurso">Cadastrar Curso</button>
+            <!-- Modal -->
+            <div class="modal fade" id="modalCadastrarCurso" tabindex="-1" role="dialog" aria-labelledby="modalCadastrarCursoLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalCadastrarCursoLabel">Cadastrar Curso</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/create_course" method="POST">
+                                <div class="form-group col-md-12">
+                                    <label for="inputNome">Nome do Curso</label>
+                                    <input type="text" class="form-control" name="nome" id="inputNome" placeholder="Digite o nome do curso" required>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label for="inputDescricao">Descrição do Curso</label>
+                                    <textarea class="form-control" name="descricao" id="inputDescricao" rows="5" required></textarea>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <label for="inputDuracao">Duração do Curso (em horas)</label>
+                                    <input type="number" class="form-control" name="carga_horaria" id="inputDuracao" placeholder="Digite a duração do curso em horas" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">Cadastrar</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <ul>
-                    <li>Nome: {{.nome}}</li>
-                    <li>Email: {{.email}}</li>
-                    <li>Tipo: {{.tipo}}</li>
-                </ul>
+        </div>
+        <div class="my-2"><h2>Cursos</h2></div>
+        <div class="row">
+            {{range .cursos}}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="card border-primary mb-3" style="max-width: 24rem;">
+                    <div class="card-body text-primary">
+                        <h5 class="card-title">{{.Nome}}</h5>
+                        <p class="card-text">{{.Descricao}}</p>
+                        <p class="card-text">{{.CargaHoraria}}</p>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="col-lg-12 d-flex justify-content-center">
+                <div class="card border-danger mb-3" style="max-width: 24rem;">
+                    <div class="card-body text-danger text-center">
+                        <p class="card-text">Sem cursos ministrados no momento</p>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</section>
+{{end}}
+{{if eq .tipo "Aluno"}}
+<!-- Informações dos cursos -->
+<section class="container text-center mt-2 col-8">
+    <div class="my-2"><h2>Cursos matriculados</h2></div>
+    <div class="my-3">
+        <div class="d-flex justify-content-center">
+            <div class="card border-danger mb-3" style="max-width: 24rem;">
+                <div class="card-body text-danger text-center">
+                    <p class="card-text">Sem cursos matriculados no momento</p>
+                </div>
             </div>
         </div>
     </div>
 </section>
+{{end}}
 {{end}}

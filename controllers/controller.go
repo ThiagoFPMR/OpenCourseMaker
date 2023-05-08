@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/ThiagoFPMR/OpenCourseMaker/course"
+	"github.com/ThiagoFPMR/OpenCourseMaker/course/newCourse"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
 	"strconv"
 
@@ -18,15 +20,17 @@ const userkey = "user"
 
 func Index(c *gin.Context) {
 	logged_in := GetLoggedInStatus(c)
+
+	cursos, err := course.GetAllCursos(db.BD)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"logged_in": logged_in,
+		"cursos":    cursos,
 	})
-}
-
-func Auth(c *gin.Context) {
-	//session, _ := store.Get(c.Request, "session")
-	//user, password, _ := c.Request.BasicAuth()
-
 }
 
 func RegisterGETHandler(c *gin.Context) {
@@ -155,7 +159,15 @@ func DashboardGETHandler(c *gin.Context) {
 	}
 
 	user, _ := user.FindByEmail(db.BD, email.(string))
+
+	cursos, err := course.GetCursosById(db.BD, user.ID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	tipo := user.Tipo
+
 	var tipoConta string
 	if tipo == 1 {
 		tipoConta = "Professor"
@@ -168,8 +180,43 @@ func DashboardGETHandler(c *gin.Context) {
 		"nome":      nome,
 		"email":     email,
 		"tipo":      tipoConta,
+		"cursos":    cursos,
 		"logged_in": logged_in,
 	})
+}
+
+func CreateCoursePOSTHandler(c *gin.Context) {
+	// Obtém os valores enviados pelo formulário
+	nome := c.PostForm("nome")
+	descricao := c.PostForm("descricao")
+	carga_horaria := c.PostForm("carga_horaria")
+
+	email, exists := c.Get("email")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, _ := user.FindByEmail(db.BD, email.(string))
+	professorID := user.ID
+
+	// Cria o curso
+	res, err := newCourse.NewCourse(db.BD, &newCourse.Request{
+		Nome:         nome,
+		Descricao:    descricao,
+		CargaHoraria: carga_horaria,
+		ProfessorID:  professorID,
+	})
+
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	fmt.Println("Created: ", res.Id)
+
+	location := url.URL{Path: "/dashboard"}
+	c.Redirect(http.StatusMovedPermanently, location.RequestURI())
 }
 
 func GetLoggedInStatus(c *gin.Context) bool {
