@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/ThiagoFPMR/OpenCourseMaker/course"
 	"github.com/ThiagoFPMR/OpenCourseMaker/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,6 +20,8 @@ func ConectBD() {
 		log.Fatal("Erro ao conectar com o banco de dados")
 	}
 	con.AutoMigrate(&models.User{})
+	con.AutoMigrate(&course.Topico{})
+	con.AutoMigrate(&course.Curso{})
 
 	BD = con
 }

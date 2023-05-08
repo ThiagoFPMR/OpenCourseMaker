@@ -26,5 +26,5 @@ func FindById(db *gorm.DB, id uint) (*models.User, error) {
 	if res.Error != nil {
 		return nil, &EmailNotFoundError{}
 	}
-	return &user, nil
+	return &models.User{ID: user.ID, Nome: user.Nome, Email: user.Email}, nil
 }
