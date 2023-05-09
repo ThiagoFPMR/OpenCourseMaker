@@ -1,14 +1,16 @@
 package routes
 
 import (
+	"html/template"
+
 	"github.com/ThiagoFPMR/OpenCourseMaker/controllers"
 	"github.com/ThiagoFPMR/OpenCourseMaker/middlewares"
 	"github.com/gin-gonic/gin"
-	"html/template"
 )
 
 func HandleRequests() {
 	r := gin.Default()
+
 	r.SetFuncMap(template.FuncMap{
 		"GetLoggedInStatus": GetLoggedInStatus,
 	})
@@ -37,6 +39,7 @@ func HandleRequests() {
 	protected.GET("/new_topic/:id", controllers.NewTopicGETHandler)
 	protected.POST("/courses/:id/topic", controllers.AddTopico)
 	protected.GET("/player", controllers.PlayerGET)
+	r.Static("/ide", "./templates/ide")
 	r.Run(":8000")
 }
 

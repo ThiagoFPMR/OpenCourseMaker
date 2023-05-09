@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/ThiagoFPMR/OpenCourseMaker/course"
 	"github.com/ThiagoFPMR/OpenCourseMaker/course/newCourse"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
@@ -10,13 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"net/http"
+	"net/url"
+
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/login"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/signup"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"net/url"
 )
 
 const userkey = "user"
