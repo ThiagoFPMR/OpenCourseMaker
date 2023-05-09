@@ -50,3 +50,12 @@ func FindCursosByStudentID(db *gorm.DB, studentID uint) ([]Curso, error) {
 	}
 	return cursos, nil
 }
+
+func GetTopicosByIdCurso(db *gorm.DB, id uint) ([]Topico, error) {
+	var topicos []Topico
+	if err := db.Find(&topicos, &Topico{CursoID: id}).Error; err != nil {
+		return nil, err
+	}
+
+	return topicos, nil
+}

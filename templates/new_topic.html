@@ -1,0 +1,74 @@
+{{define "new_topic.html"}}
+
+{{template "_head"}}
+
+<section class="container mt-2 col-8">
+    <header class="header-area">
+        <div class="classy-nav-container breakpoint-off">
+            <div class="container">
+                <!-- #### Menu ##### -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light border border-primary mb-5">
+                    <div class="navbar-collapse collapse w-100 order-1 order-md-0 dual-collapse2">
+                        <a class="navbar-brand" href="/">Open Couse Maker</a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+                    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
+                        <ul class="navbar-nav ml-auto">
+                            {{if .logged_in}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-danger" href="/logout" role="button">Sair</a></li>
+                            {{else}}
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/login" role="button">Entrar</a></li>
+                            <li class="nav-item"><a class="nav-link btn btn-outline-primary" href="/register" role="button">Cadastre-se</a></li>
+                            {{end}}
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+</section>
+
+<section>
+    <div class="contact-area section-padding-0-80">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-heading">
+                        <h2>Criar conta</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="contact-form-area">
+                        <form method="POST" action="/courses/{{.curso.ID}}/topic">
+                            <input type="hidden" name="id" value="{{.curso.ID}}">
+                            <input type="hidden" id="professor_id" name="professor_id" value="{{.user.ID}}">
+
+                            <div class="form-group">
+                                <label for="titulo">Título:</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="video">URL do vídeo:</label>
+                                <input type="text" class="form-control" id="video_url" name="video_url">
+                            </div>
+                            <div class="form-group">
+                                <label for="descricao">Descrição:</label>
+                                <textarea class="form-control" id="descricao" name="descricao"></textarea>
+                            </div>
+
+                            <div class="mt-2 col-12 text-center">
+                                <a class="btn btn-info" href="/">Voltar</a>
+                                <button class="btn btn-outline-primary" type="submit">Criar tópico</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

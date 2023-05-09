@@ -34,6 +34,8 @@ func HandleRequests() {
 	protected.POST("/create_course", controllers.CreateCoursePOSTHandler)
 	protected.GET("/cursos/:id", controllers.CurseseInfoGETHandler)
 	protected.GET("/enroll/:id", controllers.EnrollHandler)
+	protected.GET("/new_topic/:id", controllers.NewTopicGETHandler)
+	protected.POST("/courses/:id/topic", controllers.AddTopico)
 	protected.GET("/player", controllers.PlayerGET)
 	r.Run(":8000")
 }
