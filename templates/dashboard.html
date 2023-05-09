@@ -112,8 +112,6 @@
                 <div class="card border-primary mb-3" style="max-width: 24rem;">
                     <div class="card-body text-primary">
                         <h5 class="card-title">{{.Nome}}</h5>
-                        <p class="card-text">{{.Descricao}}</p>
-                        <p class="card-text">{{.CargaHoraria}}</p>
                     </div>
                 </div>
             </div>
@@ -134,14 +132,27 @@
 <!-- Informações dos cursos -->
 <section class="container text-center mt-2 col-8">
     <div class="my-2"><h2>Cursos matriculados</h2></div>
-    <div class="my-3">
-        <div class="d-flex justify-content-center">
+    <div class="row">
+        {{range .matriculas}}
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card border-primary mb-3" style="max-width: 24rem;">
+                <div class="card-body text-primary">
+                    <h5 class="card-title">{{.Nome}}</h5>
+                </div>
+                <div class="card-footer bg-transparent border-primary">
+                    <a class="nav-link btn btn-outline-primary" href="/enroll/{{.ID}}" role="button">Ver Mais</a>
+                </div>
+            </div>
+        </div>
+        {{else}}
+        <div class="col-lg-12 d-flex justify-content-center">
             <div class="card border-danger mb-3" style="max-width: 24rem;">
-                <div class="card-body text-danger text-center">
+                <div class="card-body text-primary text-center">
                     <p class="card-text">Sem cursos matriculados no momento</p>
                 </div>
             </div>
         </div>
+        {{end}}
     </div>
 </section>
 {{end}}

@@ -5,6 +5,7 @@ import (
 	"github.com/ThiagoFPMR/OpenCourseMaker/course"
 	"github.com/ThiagoFPMR/OpenCourseMaker/course/newCourse"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
+	"gorm.io/gorm"
 	"strconv"
 
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
@@ -166,6 +167,12 @@ func DashboardGETHandler(c *gin.Context) {
 		return
 	}
 
+	cursosMatriculados, err := course.FindCursosByStudentID(db.BD, user.ID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	tipo := user.Tipo
 
 	var tipoConta string
@@ -177,11 +184,12 @@ func DashboardGETHandler(c *gin.Context) {
 
 	// Renderiza a página de dashboard com as informações do usuário atual
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{
-		"nome":      nome,
-		"email":     email,
-		"tipo":      tipoConta,
-		"cursos":    cursos,
-		"logged_in": logged_in,
+		"nome":       nome,
+		"email":      email,
+		"tipo":       tipoConta,
+		"cursos":     cursos,
+		"matriculas": cursosMatriculados,
+		"logged_in":  logged_in,
 	})
 }
 
@@ -217,6 +225,76 @@ func CreateCoursePOSTHandler(c *gin.Context) {
 
 	location := url.URL{Path: "/dashboard"}
 	c.Redirect(http.StatusMovedPermanently, location.RequestURI())
+}
+
+func CurseseInfoGETHandler(c *gin.Context) {
+	logged_in := GetLoggedInStatus(c)
+	idStr := c.Param("id")
+	id64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	var id uint = uint(id64)
+
+	curso, err := course.FindCursoById(db.BD, id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	professor_responsavel, err := user.FindById(db.BD, curso.ProfessorID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(curso)
+
+	c.HTML(http.StatusOK, "course_info.html", gin.H{
+		"curso":                 curso,
+		"professor_responsavel": professor_responsavel,
+		"logged_in":             logged_in,
+	})
+}
+
+func EnrollHandler(c *gin.Context) {
+	logged_in := GetLoggedInStatus(c)
+	currentUserID, _ := user.ExtractTokenID(c)
+	idStr := c.Param("id")
+	id64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	var courseID uint = uint(id64)
+	curso, err := course.FindCursoById(db.BD, courseID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	// Verificar se o usuário já está matriculado no curso
+	enrollment, err := course.FindEnrollmentByCourseAndStudent(db.BD, courseID, currentUserID)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if enrollment == nil {
+		// Criar a matrícula
+		newEnrollment := &course.Enrollment{
+			CursoID: courseID,
+			AlunoID: currentUserID,
+		}
+		err = db.BD.Create(newEnrollment).Error
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.HTML(http.StatusOK, "enroll.html", gin.H{
+		"curso":     curso,
+		"logged_in": logged_in,
+	})
 }
 
 func GetLoggedInStatus(c *gin.Context) bool {

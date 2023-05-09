@@ -22,6 +22,7 @@ func ConectBD() {
 	con.AutoMigrate(&models.User{})
 	con.AutoMigrate(&course.Topico{})
 	con.AutoMigrate(&course.Curso{})
+	con.AutoMigrate(&course.Enrollment{})
 
 	BD = con
 }

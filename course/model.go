@@ -21,3 +21,10 @@ type Topico struct {
 	CursoID  uint      `gorm:"not null"`
 	CriadoEm time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
+
+type Enrollment struct {
+	ID      uint   `gorm:"primary_key"`
+	AlunoID uint   `gorm:"not null"`
+	CursoID uint   `gorm:"not null"`
+	Status  string `gorm:"not null"`
+}
