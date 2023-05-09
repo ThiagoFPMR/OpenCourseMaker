@@ -2,19 +2,24 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/ThiagoFPMR/OpenCourseMaker/course"
 	"github.com/ThiagoFPMR/OpenCourseMaker/course/newCourse"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
 	"gorm.io/gorm"
 	"strconv"
+	"strings"
+	"time"
+
+	"net/http"
+	"net/url"
 
 	"github.com/ThiagoFPMR/OpenCourseMaker/db"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/login"
 	"github.com/ThiagoFPMR/OpenCourseMaker/user/signup"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"net/url"
 )
 
 const userkey = "user"
@@ -259,6 +264,12 @@ func CurseseInfoGETHandler(c *gin.Context) {
 func EnrollHandler(c *gin.Context) {
 	logged_in := GetLoggedInStatus(c)
 	currentUserID, _ := user.ExtractTokenID(c)
+	user, err := user.FindById(db.BD, currentUserID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(user)
 	idStr := c.Param("id")
 	id64, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
@@ -272,29 +283,113 @@ func EnrollHandler(c *gin.Context) {
 		return
 	}
 
-	// Verificar se o usuário já está matriculado no curso
-	enrollment, err := course.FindEnrollmentByCourseAndStudent(db.BD, courseID, currentUserID)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-	if enrollment == nil {
-		// Criar a matrícula
-		newEnrollment := &course.Enrollment{
-			CursoID: courseID,
-			AlunoID: currentUserID,
-		}
-		err = db.BD.Create(newEnrollment).Error
-		if err != nil {
+	// Verificar se o usuário já está matriculado no curso e se é um professor
+	if user.Tipo == 2 {
+		enrollment, err := course.FindEnrollmentByCourseAndStudent(db.BD, courseID, currentUserID)
+		if err != nil && err != gorm.ErrRecordNotFound {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		if enrollment == nil {
+			// Criar a matrícula
+			newEnrollment := &course.Enrollment{
+				CursoID: courseID,
+				AlunoID: currentUserID,
+			}
+			err = db.BD.Create(newEnrollment).Error
+			if err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+		}
 	}
+
+	topicos, err := course.GetTopicosByIdCurso(db.BD, courseID)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(topicos)
 
 	c.HTML(http.StatusOK, "enroll.html", gin.H{
 		"curso":     curso,
+		"usuario":   user,
+		"topicos":   topicos,
 		"logged_in": logged_in,
 	})
+}
+
+func NewTopicGETHandler(c *gin.Context) {
+	logged_in := GetLoggedInStatus(c)
+	idStr := c.Param("id")
+	id64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	var id uint = uint(id64)
+
+	curso, err := course.FindCursoById(db.BD, id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.HTML(http.StatusOK, "new_topic.html", gin.H{
+		"curso":     curso,
+		"logged_in": logged_in,
+	})
+}
+
+func AddTopico(c *gin.Context) {
+	currentUserID, _ := user.ExtractTokenID(c)
+
+	idStr := c.Param("id")
+	id64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	var courseID uint = uint(id64)
+
+	// Verifica se o curso existe
+	curso, err := course.FindCursoById(db.BD, uint(courseID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid course ID"})
+		return
+	}
+
+	// Verifica se o usuário é o professor responsável pelo curso
+	if curso.ProfessorID != currentUserID {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Parse dos dados do formulário
+	titulo := c.PostForm("titulo")
+	videoURL := c.PostForm("video_url")
+	descricao := c.PostForm("descricao")
+
+	videoID := extractVideoID(videoURL)
+
+	// Cria o novo tópico
+	topico := course.Topico{
+		Titulo:      titulo,
+		VideoURL:    &videoID,
+		Desc:        &descricao,
+		CursoID:     curso.ID,
+		ProfessorID: curso.ProfessorID,
+		CriadoEm:    time.Now(),
+	}
+
+	// Salva o novo tópico no banco de dados
+	if err := db.BD.Create(&topico).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create topic"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Topic created successfully"})
 }
 
 func GetLoggedInStatus(c *gin.Context) bool {
@@ -303,4 +398,10 @@ func GetLoggedInStatus(c *gin.Context) bool {
 		return false
 	}
 	return true
+}
+
+func extractVideoID(videoURL string) string {
+	videoID := strings.TrimSpace(strings.TrimPrefix(videoURL, "https://www.youtube.com/watch?v="))
+	last11Chars := videoID[len(videoID)-11:]
+	return last11Chars
 }

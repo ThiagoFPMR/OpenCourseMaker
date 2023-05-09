@@ -14,12 +14,13 @@ type Curso struct {
 }
 
 type Topico struct {
-	ID       uint      `gorm:"primary_key"`
-	Titulo   string    `gorm:"not null"`
-	VideoURL *string   // campo de vídeo é opcional
-	Desc     *string   // campo de descrição é opcional
-	CursoID  uint      `gorm:"not null"`
-	CriadoEm time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	ID          uint      `gorm:"primary_key"`
+	Titulo      string    `gorm:"not null"`
+	VideoURL    *string   // campo de vídeo é opcional
+	Desc        *string   // campo de descrição é opcional
+	CursoID     uint      `gorm:"not null"`
+	ProfessorID uint      `gorm:"not null"`
+	CriadoEm    time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
 type Enrollment struct {

@@ -30,14 +30,78 @@
         </div>
     </header>
 </section>
-<div class="container">
-    <h2>{{ .curso.Nome }}</h2>
-    <div class="d-flex justify-content-between">
-        <div class="col-6">
-            <div class="my-3">
-                <h5>Componentes do curso:</h5>
+<section class="container text-center mt-2 col-8">
+    <div class="my-2">
+        <h2>{{ .curso.Nome }}</h2>
+    </div>
+    <div class="mb-3">
+        <h5>Componentes do curso:</h5>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 d-flex justify-content-center">
+            <div class="card mb-3" style="max-width: 24rem;">
+                {{if eq .usuario.Tipo 1}}
+                <div class="mb-3">
+                    <a class="btn btn-outline-secondary" href="/new_topic/{{.curso.ID}}" role="button">Cadastrar Tópico de Aula</a>
+                </div>
+                {{end}}
             </div>
         </div>
     </div>
-</div>
+
+</section>
+<!-- Informações dos tópicos de aula -->
+<section class="container mt-2 col-8">
+    <script>
+        function onYouTubeIframeAPIReady() {
+            var videos = [
+                {{range .topicos}}
+            {id: '{{.ID}}', url: '{{.VideoURL}}'},
+            {{end}}
+        ];
+
+            for (var i = 0; i < videos.length; i++) {
+                new YT.Player('player' + videos[i].id, {
+                    height: '360',
+                    width: '640',
+                    videoId: videos[i].url,
+                    events: {
+                        'onStateChange': function (event) {
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                var message = {
+                                    'event': 'playVideo',
+                                    'data': {
+                                        'videoId': event.target.getVideoData().video_id
+                                    }
+                                };
+                                window.parent.postMessage(message, "http://localhost:8000");
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+
+    {{range .topicos}}
+    <div class="card border-primary mb-3 text-center" style="max-width: 100%;">
+        <div class="card-header bg-primary bg-gradient text-white">
+            <h5 class="card-title">{{.Titulo}}</h5>
+        </div>
+        <div class="card-body text-dark">
+            <div id="player{{.ID}}"></div>
+            <script src="https://www.youtube.com/iframe_api"></script>
+            <p class="card-text">{{.Desc}}</p>
+        </div>
+    </div>
+    {{else}}
+    <div class="d-flex justify-content-center">
+        <div class="card border-danger mb-3" style="max-width: 24rem;">
+            <div class="card-body text-danger text-center">
+                <p class="card-text">Sem tópicos cadastrados</p>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</section>
 {{end}}
