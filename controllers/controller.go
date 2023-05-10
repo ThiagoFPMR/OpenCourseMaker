@@ -309,11 +309,15 @@ func EnrollHandler(c *gin.Context) {
 		return
 	}
 
+	// Verificar se o usuário é o criador do curso
+	isOwner := currentUserID == curso.ProfessorID
+
 	c.HTML(http.StatusOK, "enroll.html", gin.H{
 		"curso":     curso,
 		"usuario":   user,
 		"topicos":   topicos,
 		"logged_in": logged_in,
+		"is_owner":  isOwner,
 	})
 }
 
@@ -388,6 +392,97 @@ func AddTopico(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Topic created successfully"})
+}
+
+func EditTopicGETHandler(c *gin.Context) {
+	logged_in := GetLoggedInStatus(c)
+
+	// Obter o ID do curso da URL
+	cursoID := c.Param("cursoId")
+
+	// Obter o ID do tópico da URL
+	topicID := c.Param("topicoId")
+
+	// Recuperar as informações do tópico do banco de dados usando o ID
+	var topic course.Topico
+	err := db.BD.Where("id = ?", topicID).First(&topic).Error
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	// Renderizar o formulário de edição com os dados do tópico
+	c.HTML(http.StatusOK, "edit_topic.html", gin.H{
+		"cursoid":   cursoID,
+		"titulo":    topic.Titulo,
+		"videoURL":  topic.VideoURL,
+		"desc":      topic.Desc,
+		"topicID":   topicID,
+		"logged_in": logged_in,
+	})
+}
+
+func SaveTopicPOSTHandler(c *gin.Context) {
+	// Redirecionar para a página do curso
+	cursoID := c.Param("cursoId")
+	cursoIDUint, err := strconv.ParseUint(cursoID, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// Recuperar o ID do tópico
+	topicID := c.Param("topicId")
+	topicIDUint, err := strconv.ParseUint(topicID, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// Recuperar os dados do formulário
+	titulo := c.PostForm("titulo")
+	videoURL := c.PostForm("video_url")
+	descricao := c.PostForm("descricao")
+
+	// Atualizar o tópico no banco de dados
+	err = course.UpdateTopic(db.BD, uint(cursoIDUint), uint(topicIDUint), titulo, videoURL, descricao)
+	if err != nil {
+		// Caso ocorra algum erro ao atualizar o tópico
+		// Retornar um erro 500 (Internal Server Error)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/enroll/%s", cursoID))
+}
+
+func DeleteTopicPOSTHandler(c *gin.Context) {
+	// Recuperar o ID do curso
+	cursoID := c.Param("cursoId")
+	cursoIDUint, err := strconv.ParseUint(cursoID, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// Recuperar o ID do tópico
+	topicoID := c.Param("topicoID") // alterar de "topicId" para "topicoID"
+	topicoIDUint, err := strconv.ParseUint(topicoID, 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// Excluir o tópico do banco de dados
+	err = course.DeleteTopic(db.BD, uint(cursoIDUint), uint(topicoIDUint)) // alterar de "topicId" para "topicoID"
+	if err != nil {
+		// Caso ocorra algum erro ao excluir o tópico
+		// Retornar um erro 500 (Internal Server Error)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/enroll/%s", cursoID))
 }
 
 func GetLoggedInStatus(c *gin.Context) bool {

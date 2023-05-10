@@ -1,4 +1,4 @@
-{{define "new_topic.html"}}
+{{define "edit_topic.html"}}
 
 {{template "_head"}}
 
@@ -36,33 +36,32 @@
             <div class="row">
                 <div class="col-12">
                     <div class="section-heading">
-                        <h2>Criar conta</h2>
+                        <h2>Editar tópico</h2>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-12">
                     <div class="contact-form-area">
-                        <form method="POST" action="/course/{{.curso.ID}}/topic">
-                            <input type="hidden" name="id" value="{{.curso.ID}}">
-                            <input type="hidden" id="professor_id" name="professor_id" value="{{.user.ID}}">
+                        <form method="POST" action="/courses/{{.cursoid}}/topico/{{.topicID}}/salvar">
+                            <input type="hidden" name="id" value="{{.cursoid}}">
 
                             <div class="form-group">
                                 <label for="titulo">Título:</label>
-                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                <input type="text" class="form-control" id="titulo" name="titulo" required value="{{.titulo}}">
                             </div>
                             <div class="form-group">
                                 <label for="video">URL do vídeo:</label>
-                                <input type="text" class="form-control" id="video_url" name="video_url">
+                                <input type="text" class="form-control" id="video_url" name="video_url" required value="{{.videoURL}}">
                             </div>
                             <div class="form-group">
                                 <label for="descricao">Descrição:</label>
-                                <textarea class="form-control" id="descricao" name="descricao"></textarea>
+                                <textarea class="form-control" id="descricao" name="descricao">{{.desc}}</textarea>
                             </div>
 
                             <div class="mt-2 col-12 text-center">
                                 <a class="btn btn-info" href="/">Voltar</a>
-                                <button class="btn btn-outline-primary" type="submit">Criar tópico</button>
+                                <button class="btn btn-outline-primary" type="submit">Salvar</button>
                             </div>
                         </form>
                     </div>
