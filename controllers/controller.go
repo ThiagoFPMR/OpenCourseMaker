@@ -8,7 +8,6 @@ import (
 	"github.com/ThiagoFPMR/OpenCourseMaker/course/newCourse"
 	"github.com/ThiagoFPMR/OpenCourseMaker/services"
 	"gorm.io/gorm"
-	"strconv"
 	"strings"
 	"time"
 
@@ -309,7 +308,6 @@ func EnrollHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(topicos)
 
 	c.HTML(http.StatusOK, "enroll.html", gin.H{
 		"curso":     curso,
