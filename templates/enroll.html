@@ -41,9 +41,11 @@
         <div class="col-lg-12 d-flex justify-content-center">
             <div class="card mb-3" style="max-width: 24rem;">
                 {{if eq .usuario.Tipo 1}}
+                {{if eq .curso.ProfessorID .usuario.ID}}
                 <div class="mb-3">
                     <a class="btn btn-outline-secondary" href="/new_topic/{{.curso.ID}}" role="button">Cadastrar Tópico de Aula</a>
                 </div>
+                {{end}}
                 {{end}}
             </div>
         </div>
@@ -93,6 +95,15 @@
             <script src="https://www.youtube.com/iframe_api"></script>
             <p class="card-text">{{.Desc}}</p>
         </div>
+        {{if $.is_owner}}
+        <div class="card-footer bg-transparent border-primary">
+            <a href="/courses/{{.CursoID}}/topico/{{.ID}}/editar" class="btn btn-primary d-inline-block">Editar</a>
+            <form action="/excluir/{{.CursoID}}/topico/{{.ID}}" method="POST" class="d-inline-block">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn btn-danger">Excluir</button>
+            </form>
+        </div>
+        {{end}}
     </div>
     {{else}}
     <div class="d-flex justify-content-center">

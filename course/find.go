@@ -53,9 +53,37 @@ func FindCursosByStudentID(db *gorm.DB, studentID uint) ([]Curso, error) {
 
 func GetTopicosByIdCurso(db *gorm.DB, id uint) ([]Topico, error) {
 	var topicos []Topico
-	if err := db.Find(&topicos, &Topico{CursoID: id}).Error; err != nil {
+	if err := db.Order("id ASC").Find(&topicos, &Topico{CursoID: id}).Error; err != nil {
 		return nil, err
 	}
 
 	return topicos, nil
+}
+
+func GetTopicoByIdCurso(db *gorm.DB, cursoID, topicoID uint) (Topico, error) {
+	var topico Topico
+	if err := db.Where(&Topico{CursoID: cursoID, ID: topicoID}).First(&topico).Error; err != nil {
+		return Topico{}, err
+	}
+
+	return topico, nil
+}
+
+func UpdateTopic(db *gorm.DB, cursoid uint, id uint, titulo string, videoURL string, desc string) error {
+	topico, err := GetTopicoByIdCurso(db, cursoid, id)
+	if err != nil {
+		return err
+	}
+	topico.Titulo = titulo
+	topico.VideoURL = &videoURL
+	topico.Desc = &desc
+	return db.Save(&topico).Error
+}
+
+func DeleteTopic(db *gorm.DB, cursoid uint, id uint) error {
+	topico, err := GetTopicoByIdCurso(db, cursoid, id)
+	if err != nil {
+		return err
+	}
+	return db.Delete(&topico).Error
 }
